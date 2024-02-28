@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	hypripc "github.com/labi-le/hyprland-ipc-client"
 	"github.com/luisnquin/pulseaudio"
@@ -19,14 +20,27 @@ func main() {
 		panic(err)
 	}
 
-	for _, input := range inputs {
-		fmt.Println(input)
+	signature := os.Getenv("HYPRLAND_INSTANCE_SIGNATURE")
+	hyprClient := hypripc.NewClient(signature)
+
+	window, err := hyprClient.ActiveWindow()
+	if err != nil {
+		panic(err)
 	}
 
-	hyprClient := hypripc.NewClient(os.Getenv("HYPRLAND_INSTANCE_SIGNATURE"))
-	fmt.Println("hyprClient.ActiveWindow()")
-	fmt.Println(hyprClient.ActiveWindow())
-}
+	for _, input := range inputs {
+		value := input.PropList["application.process.id"]
 
-// pactl list sink-inputs | grep --before-context=30 --after-context=100 spotify
-// pactl set-sink-input-mute 198 toggle
+		if pid, err := strconv.Atoi(value); err == nil {
+			if pid == window.Pid {
+				if err := input.ToggleMute(); err != nil {
+					panic(err)
+				}
+
+				return
+			}
+		}
+	}
+
+	fmt.Println("wuuups...")
+}
