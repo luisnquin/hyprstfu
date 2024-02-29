@@ -13,15 +13,23 @@ import (
 	"github.com/luisnquin/pulseaudio"
 )
 
+var version = "unknown"
+
 func main() {
-	unmuteAll := false
+	showVersion, unmuteAll := false, false
 
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags]\n", APP_NAME)
 		flag.PrintDefaults()
 	}
 	flag.BoolVar(&unmuteAll, "unmute-all", false, "Unmute all pulseaudio sinks(reverts any previous change)")
+	flag.BoolVar(&showVersion, "version", false, "Print the program version")
 	flag.Parse()
+
+	if showVersion {
+		fmt.Printf("%s\n", version)
+		os.Exit(0)
+	}
 
 	lw, err := getLogsWriter()
 	if err != nil {
