@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -13,6 +14,15 @@ import (
 )
 
 func main() {
+	unmuteAll := false
+
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags]\n", APP_NAME)
+		flag.PrintDefaults()
+	}
+	flag.BoolVar(&unmuteAll, "unmute-all", false, "Unmute all pulseaudio sinks(reverts any previous change)")
+	flag.Parse()
+
 	lw, err := getLogsWriter()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -41,29 +51,37 @@ func main() {
 
 	hyprClient := hypripc.NewClient(signature)
 
-	window, err := hyprClient.ActiveWindow()
-	if err != nil {
-		log.Err(err).Msg("couldn't get active Hyprland window...")
-		lw.Close()
-		log.Pretty.Error1("couldn't get active Hyprland window")
-	}
+	if unmuteAll {
+		if err := unmuteSinkInputs(paClient); err != nil {
+			log.Err(err).Msg("cannot unmute sink inputs...")
+			lw.Close()
+			log.Pretty.Error1(err.Error())
+		}
+	} else {
+		window, err := hyprClient.ActiveWindow()
+		if err != nil {
+			log.Err(err).Msg("couldn't get active Hyprland window...")
+			lw.Close()
+			log.Pretty.Error1("couldn't get active Hyprland window")
+		}
 
-	if err := toggleSinkInputMute(paClient, window.Pid); err != nil {
-		if errors.Is(err, ErrSinkInputNotFound) {
-			const msg = "couldn't find a sink input for active window"
-			log.Warn().Msg(msg)
-			lw.Close()
-			log.Pretty.Error1(msg)
-		} else {
-			log.Err(err).Msg("couldn't toggle sink input mute...")
-			lw.Close()
-			log.Pretty.Error1("couldn't toggle sink input mute :(")
+		if err := toggleSinkInputMute(paClient, window.Pid); err != nil {
+			if errors.Is(err, ErrSinkInputNotFound) {
+				const msg = "couldn't find a sink input for active window"
+				log.Warn().Msg(msg)
+				lw.Close()
+				log.Pretty.Error1(msg)
+			} else {
+				log.Err(err).Msg("couldn't toggle sink input mute...")
+				lw.Close()
+				log.Pretty.Error1("couldn't toggle sink input mute :(")
+			}
 		}
 	}
 }
 
 func getLogsWriter() (io.WriteCloser, error) {
-	fp := path.Join(os.TempDir(), "hyprlstfu.log")
+	fp := path.Join(os.TempDir(), fmt.Sprintf("%s.log", APP_NAME))
 	flags := os.O_CREATE | os.O_RDWR | os.O_APPEND
 
 	f, err := os.OpenFile(fp, flags, os.ModePerm)

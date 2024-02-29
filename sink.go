@@ -39,3 +39,18 @@ func toggleSinkInputMute(paClient *pulseaudio.Client, pid int) error {
 
 	return ErrSinkInputNotFound
 }
+
+func unmuteSinkInputs(paClient *pulseaudio.Client) error {
+	inputs, err := paClient.SinkInputs()
+	if err != nil {
+		return fmt.Errorf("unable to get pulseaudio sink: %w", err)
+	}
+
+	for _, input := range inputs {
+		if err := input.SetMute(false); err != nil { // collect errors and return everything in a single error set
+			return fmt.Errorf("unable to toggle mute of pulseaudio input '%s'(%d)': %w", input.Name, input.Index, err)
+		}
+	}
+
+	return nil
+}
