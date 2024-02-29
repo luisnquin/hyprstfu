@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	hypripc "github.com/labi-le/hyprland-ipc-client"
+	hypr_ipc "github.com/labi-le/hyprland-ipc-client"
 	"github.com/luisnquin/go-log"
 	"github.com/luisnquin/pulseaudio"
 )
@@ -32,24 +32,12 @@ func main() {
 	defer lw.Close()
 	log.Init(lw)
 
-	signature := os.Getenv(SIGNATURE_ENV_KEY)
-	log.Trace().Str("hyprland_is", signature).Send()
-
-	if signature == "" {
-		msg := fmt.Sprintf("couldn't get '%s' environment variable, unable to initialize IPC client", SIGNATURE_ENV_KEY)
-		log.Error().Msg(msg)
-		lw.Close()
-		log.Pretty.Fatal(msg)
-	}
-
 	paClient, err := pulseaudio.NewClient()
 	if err != nil {
 		log.Err(err).Msg("cannot create pulseaudio client, missing pulseaudio or pipewire with 'pipewire-pulse'?")
 		lw.Close()
 		log.Pretty.Error1("cannot create pulseaudio client :(")
 	}
-
-	hyprClient := hypripc.NewClient(signature)
 
 	if unmuteAll {
 		if err := unmuteSinkInputs(paClient); err != nil {
@@ -58,6 +46,18 @@ func main() {
 			log.Pretty.Error1(err.Error())
 		}
 	} else {
+		signature := os.Getenv(SIGNATURE_ENV_KEY)
+		log.Trace().Str("hyprland_is", signature).Send()
+
+		if signature == "" {
+			msg := fmt.Sprintf("couldn't get '%s' environment variable, unable to initialize IPC client", SIGNATURE_ENV_KEY)
+			log.Error().Msg(msg)
+			lw.Close()
+			log.Pretty.Fatal(msg)
+		}
+
+		hyprClient := hypr_ipc.NewClient(signature)
+
 		window, err := hyprClient.ActiveWindow()
 		if err != nil {
 			log.Err(err).Msg("couldn't get active Hyprland window...")
