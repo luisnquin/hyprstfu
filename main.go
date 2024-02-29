@@ -73,6 +73,8 @@ func main() {
 			log.Pretty.Error1("couldn't get active Hyprland window")
 		}
 
+		log.Debug().Any("active_window", window).Send()
+
 		if err := toggleSinkInputMute(paClient, window.Pid); err != nil {
 			if errors.Is(err, ErrSinkInputNotFound) {
 				const msg = "couldn't find a sink input for active window"

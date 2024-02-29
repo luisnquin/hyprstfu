@@ -7,6 +7,7 @@ import (
 
 	"github.com/luisnquin/go-log"
 	"github.com/luisnquin/pulseaudio"
+	"github.com/mitchellh/go-ps"
 )
 
 var ErrSinkInputNotFound = errors.New("sink input couldn't be found")
@@ -18,6 +19,8 @@ func toggleSinkInputMute(paClient *pulseaudio.Client, pid int) error {
 	}
 
 	for _, input := range inputs {
+		log.Debug().Any("input", input).Send()
+
 		value := input.PropList[PROCESS_ID_PROPERTY_KEY]
 
 		sinkPid, err := strconv.Atoi(value)
@@ -29,11 +32,26 @@ func toggleSinkInputMute(paClient *pulseaudio.Client, pid int) error {
 		}
 
 		if sinkPid == pid {
+			log.Debug().Msg("sink has been found")
+
 			if err := input.ToggleMute(); err != nil {
 				return fmt.Errorf("unable to toggle mute of pulseaudio input '%s'(%d)': %w", input.Name, input.Index, err)
 			}
 
 			return nil
+		}
+	}
+
+	processes, err := ps.Processes()
+	if err != nil {
+		return err
+	}
+
+	for _, process := range processes {
+		if process.PPid() == pid {
+			if err := toggleSinkInputMute(paClient, process.Pid()); err == nil {
+				return nil
+			}
 		}
 	}
 
