@@ -69,6 +69,8 @@ func unmuteSinkInputs(paClient *pulseaudio.Client) error {
 	}
 
 	for _, input := range inputs {
+		log.Trace().Any("sink_input", input).Msg("unmutting sink input...")
+
 		if err := input.SetMute(false); err != nil { // collect errors and return everything in a single error set
 			return fmt.Errorf("unable to toggle mute of pulseaudio input '%s'(%d)': %w", input.Name, input.Index, err)
 		}
