@@ -16,7 +16,7 @@ import (
 var version = "unknown"
 
 func main() {
-	showVersion, unmuteAll := false, false
+	debug, showVersion, unmuteAll := false, false, false
 
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags]\n", APP_NAME)
@@ -24,6 +24,7 @@ func main() {
 	}
 	flag.BoolVar(&unmuteAll, "unmute-all", false, "Unmute all pulseaudio sinks(reverts any previous change)")
 	flag.BoolVar(&showVersion, "version", false, "Print the program version")
+	flag.BoolVar(&debug, "debug", false, "Send debug logs to stderr")
 	flag.Parse()
 
 	if showVersion {
@@ -38,7 +39,7 @@ func main() {
 	}
 
 	defer lw.Close()
-	log.Init(lw)
+	log.Init(io.MultiWriter(lw, os.Stderr))
 
 	paClient, err := pulseaudio.NewClient()
 	if err != nil {
