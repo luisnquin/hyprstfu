@@ -12,13 +12,8 @@ import (
 
 var ErrSinkInputNotFound = errors.New("sink input couldn't be found")
 
-func toggleSinkInputMute(paClient *pulseaudio.Client, pid int) error {
-	inputs, err := paClient.SinkInputs()
-	if err != nil {
-		return fmt.Errorf("unable to get pulseaudio sink: %w", err)
-	}
-
-	for _, input := range inputs {
+func searchAndToggleSinkInput(sinks []pulseaudio.SinkInput, processes []ps.Process, pid int) error {
+	for _, input := range sinks {
 		log.Debug().Any("input", input).Send()
 
 		value := input.PropList[PROCESS_ID_PROPERTY_KEY]
@@ -42,20 +37,29 @@ func toggleSinkInputMute(paClient *pulseaudio.Client, pid int) error {
 		}
 	}
 
-	processes, err := ps.Processes()
-	if err != nil {
-		return err
-	}
-
 	for _, process := range processes {
 		if process.PPid() == pid {
-			if err := toggleSinkInputMute(paClient, process.Pid()); err == nil {
+			if err := searchAndToggleSinkInput(sinks, processes, process.Pid()); err == nil {
 				return nil
 			}
 		}
 	}
 
 	return ErrSinkInputNotFound
+}
+
+func toggleSinkInputMute(paClient *pulseaudio.Client, pid int) error {
+	sinks, err := paClient.SinkInputs()
+	if err != nil {
+		return fmt.Errorf("unable to get pulseaudio sink: %w", err)
+	}
+
+	processes, err := ps.Processes()
+	if err != nil {
+		return err
+	}
+
+	return searchAndToggleSinkInput(sinks, processes, pid)
 }
 
 func unmuteSinkInputs(paClient *pulseaudio.Client) error {
