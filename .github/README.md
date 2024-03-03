@@ -28,7 +28,7 @@ In my current circunstances I'd even try to do the same thing in Zig but your sa
 ## Install
 
 ```sh
-# Requires go >=v1.22
+# Requires go >=v1.18
 $ go install github.com/luisnquin/hyprstfu@latest
 ```
 
