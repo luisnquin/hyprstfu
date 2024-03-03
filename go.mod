@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/labi-le/hyprland-ipc-client v1.0.3
-	github.com/luisnquin/go-log v1.0.0
+	github.com/luisnquin/go-log v1.0.1
 	github.com/luisnquin/pulseaudio v1.0.0
 	github.com/mitchellh/go-ps v1.0.0
 )
