@@ -9,17 +9,24 @@ jobs:
     steps:
       - name: Code checkout
         uses: actions/checkout@v4
+
       - name: Set output
         id: vars
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+
       - name: Install nurl from crates.io
         uses: actions-rs/cargo@v1
         with:
           command: install
           args: nurl
+
       - name: Update default.nix version and hash
         env:
           RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
@@ -30,6 +37,7 @@ jobs:
 
           sed -i "s/version = \".*\";/version = \"$new_version\";/" default.nix
           sed -i "s/hash = \".*\";/hash = \"$new_hash\";/" default.nix
+
       - name: Code clean up + pull request
         uses: luisnquin/deadnix-action@main
         env:
