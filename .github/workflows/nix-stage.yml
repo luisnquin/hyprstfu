@@ -1,5 +1,6 @@
 name: Nix stage
 on:
+  workflow_dispatch:
   push:
     tags:
       - "v*.*.*"
@@ -12,7 +13,9 @@ jobs:
 
       - name: Set output
         id: vars
-        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+        run: |
+          tag="${GITHUB_REF#refs/*/}"
+          echo "version=${tag:1}" >> $GITHUB_OUTPUT
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -29,19 +32,19 @@ jobs:
 
       - name: Update default.nix version and hash
         env:
-          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.vars.outputs.version }}
           REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
         run: |
           new_version="$RELEASE_VERSION"
-          new_hash="$(nurl "$REPOSITORY_URL" "$RELEASE_VERSION" --hash)"
+          new_hash="$(nurl "$REPOSITORY_URL" "v$RELEASE_VERSION" --hash)"
 
           sed -i "s/version = \".*\";/version = \"$new_version\";/" default.nix
-          sed -i "s/hash = \".*\";/hash = \"$new_hash\";/" default.nix
+          sed -i "s#hash = \".*\";#hash = \"$new_hash\";#" default.nix
 
       - name: Code clean up + pull request
         uses: luisnquin/deadnix-action@main
         env:
-          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.vars.outputs.version }}
           COMMITER_EMAIL: antigen.bot0@gmail.com
           COMMITER_NAME: Antigen
         with:
