@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*.*.*"
+permissions:
+  contents: write
 jobs:
   update-nix-package:
     runs-on: ubuntu-latest
