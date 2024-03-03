@@ -13,7 +13,7 @@ import (
 	"github.com/luisnquin/pulseaudio"
 )
 
-var version = "unknown"
+const version = "unknown"
 
 func main() {
 	debug, showVersion, unmuteAll := false, false, false
