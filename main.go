@@ -54,12 +54,16 @@ func main() {
 	}
 
 	if unmuteAll {
+		log.Info().Msg("the goal now is to unmute every sink input")
+
 		if err := unmuteSinkInputs(paClient); err != nil {
 			log.Err(err).Msg("cannot unmute sink inputs...")
 			lw.Close()
 			log.Pretty.Error1(err.Error())
 		}
 	} else {
+		log.Info().Msg("the goal now is to mute the sink input of the active window")
+
 		signature := os.Getenv(SIGNATURE_ENV_KEY)
 		log.Trace().Str("hyprland_is", signature).Send()
 
