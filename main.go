@@ -39,7 +39,12 @@ func main() {
 	}
 
 	defer lw.Close()
-	log.Init(io.MultiWriter(lw, os.Stderr))
+
+	if debug {
+		log.Init(io.MultiWriter(lw, os.Stderr))
+	} else {
+		log.Init(lw)
+	}
 
 	paClient, err := pulseaudio.NewClient()
 	if err != nil {
