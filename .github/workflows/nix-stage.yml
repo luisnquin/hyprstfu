@@ -24,8 +24,8 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v4
 
-      - name: Install nurl from nixpkgs
-        run: nix-env -iA nixpkgs.nurl
+      - name: Install nurl from nix
+        run: nix-env -iA nixos.nurl
 
       - name: Update default.nix version and hash
         env:
