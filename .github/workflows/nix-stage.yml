@@ -1,0 +1,42 @@
+name: Nix stage
+on:
+  push:
+    tags:
+      - "v*.*.*"
+jobs:
+  update-nix-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+      - name: Set output
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Install nurl from crates.io
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: nurl
+      - name: Update default.nix version and hash
+        env:
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+          REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          new_version="$RELEASE_VERSION"
+          new_hash="$(nurl "$REPOSITORY_URL" "$RELEASE_VERSION" --hash)"
+
+          sed -i "s/version = \".*\";/version = \"$new_version\";/" default.nix
+          sed -i "s/hash = \".*\";/hash = \"$new_hash\";/" default.nix
+      - name: Code clean up + pull request
+        uses: luisnquin/deadnix-action@main
+        env:
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+          COMMITER_EMAIL: antigen.bot0@gmail.com
+          COMMITER_NAME: Antigen
+        with:
+          author: ${{ env.COMMITER_NAME }} <${{ env.COMMITER_EMAIL }}>
+          committer: ${{ env.COMMITER_NAME }} <${{ env.COMMITER_EMAIL }}>
+          commit_message: "bump(nix): ${{ env.RELEASE_VERSION }}"
