@@ -24,11 +24,8 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v4
 
-      - name: Install nurl from crates.io
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: nurl
+      - name: Install nurl from nixpkgs
+        run: nix-env -iA nixpkgs.nurl
 
       - name: Update default.nix version and hash
         env:
