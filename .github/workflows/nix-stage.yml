@@ -44,20 +44,19 @@ jobs:
       - name: Create PR
         env:
           RELEASE_VERSION: ${{ steps.vars.outputs.version }}
-          COMMITER_EMAIL: antigen.bot0@gmail.com
+
           COMMITER_USERNAME: antigen-bot
           COMMITER_NAME: Antigen
 
-          commiter_identity: ${{ env.COMMITER_NAME }} <${{ env.COMMITER_EMAIL }}>
-          commit_message: "bump(nix): ${{ env.RELEASE_VERSION }}"
+          commiter_identity: Antigen <antigen.bot0@gmail.com>
         uses: peter-evans/create-pull-request@v4
         with:
           author: "${{ env.commiter_identity }}"
           base: main
           branch: nix-update-env
           delete-branch: true
-          title: "${{ env.commit_message }}"
-          commit-message: "${{ env.commit_message }}"
+          title: "Nix package update: new source version and hash (v${{ env.RELEASE_VERSION }})"
+          commit-message: "bump(nix): v${{ env.RELEASE_VERSION }}"
           committer: "${{ env.commiter_identity }}"
           body: |
             Automated changes by [${{ env.COMMITER_NAME }}](https://github.com/${{ env.COMMITER_USERNAME }}).
