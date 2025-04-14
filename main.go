@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	hypr_ipc "github.com/labi-le/hyprland-ipc-client"
+	hypr_ipc "github.com/labi-le/hyprland-ipc-client/v3"
 	"github.com/luisnquin/go-log"
 	"github.com/luisnquin/pulseaudio"
 )
@@ -74,7 +74,7 @@ func main() {
 			log.Pretty.Fatal(msg)
 		}
 
-		hyprClient := hypr_ipc.NewClient(signature)
+		hyprClient := hypr_ipc.MustClient(signature)
 
 		window, err := hyprClient.ActiveWindow()
 		if err != nil {
