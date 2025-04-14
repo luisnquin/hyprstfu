@@ -1,9 +1,9 @@
 {
   fetchFromGitHub,
-  buildGo122Module,
+  buildGoModule,
   ...
 }:
-buildGo122Module rec {
+buildGoModule rec {
   pname = "hyprstfu";
   version = "1.2.1";
   src = fetchFromGitHub {
