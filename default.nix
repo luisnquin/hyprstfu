@@ -5,17 +5,17 @@
 }:
 buildGoModule rec {
   pname = "hyprstfu";
-  version = "1.2.1";
+  version = "1.2.4";
   src = fetchFromGitHub {
     owner = "luisnquin";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-hVldMjaDfZND9DduhLEDK3ga1KyjSgf+12d6+75Mhzo=";
+    hash = "sha256-g7m95uz4wWqZyHY3lulGLQiKKF6ACpxIqUVRhIg3ndU=";
   };
 
   ldflags = ["-X main.version=v${version}"];
   buildTarget = ".";
 
-  vendorHash = "sha256-5Ahu8N1hV05QkT2y28e6EPHKQq1+YcD6E6mp1b3duEo=";
+  vendorHash = "sha256-eiTGunM+U4AnBpkl1SymHOrY+Uij/ss0/BEtoZBfXB0=";
   doCheck = false;
 }
