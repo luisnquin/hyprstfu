@@ -18,4 +18,6 @@ buildGoModule rec {
 
   vendorHash = "sha256-eiTGunM+U4AnBpkl1SymHOrY+Uij/ss0/BEtoZBfXB0=";
   doCheck = false;
+
+  meta.mainProgram = "hyprstfu";
 }
