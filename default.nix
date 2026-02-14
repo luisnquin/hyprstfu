@@ -5,12 +5,12 @@
 }:
 buildGoModule rec {
   pname = "hyprstfu";
-  version = "1.2.4";
+  version = "1.2.5";
   src = fetchFromGitHub {
     owner = "luisnquin";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-g7m95uz4wWqZyHY3lulGLQiKKF6ACpxIqUVRhIg3ndU=";
+    hash = "sha256-WLrSh9j+HVB3LPTEr/UnUJF9JtQSrmI5Kx/xUhs6RE8=";
   };
 
   ldflags = ["-X main.version=v${version}"];
