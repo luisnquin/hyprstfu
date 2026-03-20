@@ -2,35 +2,38 @@
   description = "Utility to mute Hyprland windows for PulseAudio and Pipewire";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    systems.url = "github:nix-systems/default-linux";
   };
 
   outputs = {
     self,
     nixpkgs,
-    flake-utils,
-  }:
-    flake-utils.lib.eachDefaultSystem (
-      system: let
-        pkgs = import nixpkgs {
-          inherit system;
-        };
+    systems,
+    ...
+  }: let
+    inherit (nixpkgs) lib;
+    eachSystem = lib.genAttrs (import systems);
+    pkgsFor = eachSystem (system:
+      import nixpkgs {
+        localSystem = system;
+      });
+  in {
+    packages = eachSystem (system: {
+      default = pkgsFor.${system}.callPackage (builtins.path {
+        name = "hyprstfu-package";
+        path = ./default.nix;
+      }) {};
+    });
 
-        defaultPackage = pkgs.callPackage (builtins.path {
-          name = "hyprstfu-package";
-          path = ./default.nix;
-        }) {};
-      in {
-        inherit defaultPackage;
+    overlays.default = final: prev: {
+      hyprstfu = self.packages.${final.system}.default;
+    };
 
-        defaultApp = flake-utils.lib.mkApp {
-          drv = defaultPackage;
-        };
-
-        devShell = pkgs.mkShell {
-          buildInputs = [defaultPackage];
-        };
-      }
-    );
+    devShells = eachSystem (system: {
+      default = pkgsFor.${system}.mkShell {
+        buildInputs = [self.packages.${system}.default];
+      };
+    });
+  };
 }
