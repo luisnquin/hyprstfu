@@ -27,7 +27,7 @@
     });
 
     overlays.default = final: prev: {
-      hyprstfu = self.packages.${final.system}.default;
+      hyprstfu = self.packages.${final.stdenv.hostPlatform.system}.default;
     };
 
     devShells = eachSystem (system: {
